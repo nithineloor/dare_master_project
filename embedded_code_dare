@@ -1,0 +1,204 @@
+#include<pic.h>
+
+void delay(int x);
+void delay1(void);
+void delay2(int);
+void command(char x);
+void data(char x);
+void datastr(const char *x);
+void trans(char x);
+char rec(void);
+void strtrans(const char *x);
+void main()
+{
+	int i,t,v,total=0;
+	char d,x,y,z;
+	char xa[4],ya[4],za[4];
+	TRISA=0xFF;
+	TRISE=0X0F;
+	ADCON0=0x01;
+	ADCON1=0x00;
+	TRISB=0X00;
+	TRISC=0x80;
+	TRISD=0x00;
+	OPTION=0X07;
+	TXSTA=0X24;
+	RCSTA=0X90;
+	SPBRG=0X19;
+	
+	command(0x01);
+	command(0x0E);
+	command(0x80);
+	command(0x38);
+	
+	command(0x01);
+	datastr("   DARE DRONE   ");
+	command(0xC0);
+	datastr("FLIGHT COURSE...");	
+	delay(5);
+	
+
+
+	
+
+
+	command(0x01);
+	datastr("processing......");
+	delay(2);
+
+	command(0xC0);
+	datastr("X");
+	delay(2);
+
+	command(0xC6);
+	datastr("Y");
+	delay(2);
+
+	command(0xCC);
+	datastr("Z");
+	delay(2);
+
+	while(1)
+	{
+
+	/*Accelerometer  x*/
+	CHS2=0;
+	CHS1=0;
+	CHS0=0;
+	ADGO=1;
+	while(ADGO==1);
+	x=ADRESH;
+	xa[0]=x/100+0x30;
+	xa[1]=(x/10)%10+0x30;
+	xa[2]=(x%10)+0x30;
+	xa[3]='\0';
+	command(0XC1);
+	datastr(xa);
+	delay(10);
+	
+	/*Accelerometer  y*/
+	CHS2=0;
+	CHS1=0;
+	CHS0=1;
+	ADGO=1;
+	while(ADGO==1);
+	y=ADRESH;
+	ya[0]=y/100+0x30;
+	ya[1]=(y/10)%10+0x30;
+	ya[2]=(y%10)+0x30;
+	ya[3]='\0';
+	command(0XC7);
+	datastr(ya);
+	delay(10);
+	
+	
+	/*Accelerometer  z*/
+	CHS2=0;
+	CHS1=1;
+	CHS0=0;
+	ADGO=1;
+	while(ADGO==1);
+	z=ADRESH;
+	za[0]=z/100+0x30;
+	za[1]=(z/10)%10+0x30;
+	za[2]=(z%10)+0x30;
+	za[3]='\0';
+	command(0XCD);
+	datastr(za);
+	delay(20);
+
+
+	/* checking */
+	
+
+	/*matlab tx */
+	delay(2);
+
+ 	trans('*');
+	
+	strtrans(xa);
+	
+	strtrans(ya);
+
+	strtrans(za);
+    trans('#');
+    delay(250);
+
+	}
+}
+void delay(int x)
+{
+int i,j;
+for(j=0;j<x;j++)
+for(i=0;i<=1000;i++);
+}
+void delay1(void)
+{
+
+TMR0=0X00;
+while(TMR0IF==0);
+TMR0IF=0;
+
+}
+void delay2(int k)
+{
+int i;
+for(i=0;i<k*15;i++)
+{
+TMR0=0X00;
+while(TMR0IF==0);
+TMR0IF=0;
+}
+}
+void command(char x)
+{
+	PORTD=x;
+	RC0=0;
+	
+	RC3=1;
+	delay(2);
+	RC3=0;
+}
+void data(char x)
+{
+	PORTD=x;
+	RC0=1;
+	
+	RC3=1;
+	delay(2);
+	RC3=0;
+}
+void datastr(const char *x)
+{
+	while(*x)
+	{
+	data(*x);
+	*x++;
+	}
+}
+void strtrans(const char *x)
+{
+		while(*x)
+		{
+		trans(*x);
+		*x++;
+		}
+}
+void trans(char x)
+{
+	TXREG=x;
+	while(TXIF==0);
+	TXIF=0;
+}
+char rec(void)
+{
+	while(RCIF==0);
+	RCIF=0;
+	if(OERR)
+	{
+	CREN=0;
+	delay(1);
+	CREN=1;
+	}
+	return(RCREG);
+}
