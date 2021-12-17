@@ -1,4 +1,4 @@
-# dare_master_project
+# masters_project
 DATA ACQUISITION &amp; RETRIEVING ENVOY : Black-box data recovery using drones
 We are suggesting a system concept t can improve the efficiency of black-box data recovery during a plane crash/missing 
 this will be helpful to start a search and rescue operation as soon as possible which may save several lives and money. 
